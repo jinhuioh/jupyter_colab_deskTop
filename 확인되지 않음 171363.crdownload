@@ -1,0 +1,442 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[17]:
+
+
+import warnings
+warnings.filterwarnings(action='ignore')
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait 
+from selenium.webdriver.support import expected_conditions as EC
+#step1.selenium 패키지와 time 모듈 import
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+import time
+
+# df엑셀로 저장하기 위해서
+import pandas as pd
+import numpy as np
+import pyperclip#로그인 캡처 우회. 아이디,비번 복붙용
+import re#숫자만 추출하기 위한 함수
+import getpass#패스워드 입력 숨기기
+#    동적크롤링을 위한 크롬 드라이버 실행
+driver=webdriver.Chrome('C:/Users/bvcxz/anaconda3/Ojin/chromedriver')
+#동적크롤링 하고싶은 사이트(네이버 사이트) 
+driver.get('https://kream.co.kr/my')
+#실행할 시간을 기다려주기 위해 sleep()을 넣기
+time.sleep(1)
+
+
+# In[15]:
+
+
+# login_btn = driver.find_element(By.CSS_SELECTOR, 'div > ul > li:nth-child(4) > a')
+# login_btn.send_keys(Keys.RETURN) 
+# time.sleep(1)
+
+
+# In[18]:
+
+
+# 아이디 비번
+uid = str(input('아이디를 입력하세요: '))
+upw = str(getpass.getpass('비밀번호를 입력하세요: '))
+# id 입력
+#id
+id_input = 'div:nth-child(2) > div > input'
+id_box = driver.find_element(By.CSS_SELECTOR, id_input)
+#pw입력
+pw_input = 'div:nth-child(3) > div > input'
+pw_box = driver.find_element(By.CSS_SELECTOR, pw_input)
+
+# 네이버 캡처 우회!====================================
+# id 입력폼클릭 => uid내용 복붙
+id_box.click()
+pyperclip.copy(uid)
+id_box.send_keys(Keys.CONTROL, 'v')
+time.sleep(1)
+
+# pw 입력폼클릭 => upw내용 복붙
+pw_box.click()
+pyperclip.copy(upw)
+pw_box.send_keys(Keys.CONTROL, 'v')
+time.sleep(1)
+# 네이버 캡처 우회!====================================
+
+# 로그인 버튼 클릭
+#log\.login
+submit_input = 'div.login_btn_box > a'
+submit_btn = driver.find_element(By.CSS_SELECTOR,submit_input)
+submit_btn.click()
+time.sleep(1)
+
+
+# In[82]:
+
+
+#__layout > div > div.header.lg > div.header_top > div > ul > li:nth-child(3) > a
+#__layout > div > div.header.lg > div.header_top > div > ul > li:nth-child(2) > a
+#__layout > div > div.header.lg > div.header_top > div > ul > li:nth-child(5) > a
+#__layout > div > div.header.md > div.header_top > div > ul > li:nth-child(3)
+# 마이페이지로 이동
+# 메일함 클릭!
+myPage_btn = driver.find_element(By.CSS_SELECTOR, 'div.top_inner > ul.top_list > li')
+myPage_btn.click()
+time.sleep(1)
+
+
+# In[88]:
+
+
+# 판매내역 종료
+#__layout > div > div.container.my.lg > div.content_area > div > div:nth-child(6) > div.purchase_list_tab.sell > div:nth-child(4) > a > dl > dd
+sell_btn = driver.find_element(By.CSS_SELECTOR, 'div.purchase_list_tab.sell > div:nth-child(4) > a > dl > dd')
+sell_btn.click()
+time.sleep(1)
+
+
+# In[89]:
+
+
+# '전체' 박스 누르기
+#__layout > div > div.container.my.mo > div > div > div.purchase_list.finished.ask > div.purchase_head > div.head_product > a
+all_btn = driver.find_element(By.CSS_SELECTOR, 'div.head_product > a')
+all_btn.click()
+time.sleep(1)
+
+
+# In[92]:
+
+
+# 정산완료 누르기
+#__layout > div > div.container.my.mo > div > div > div.purchase_list.finished.ask > div.layer.mo > div > div.layer_content > div > ul > li:nth-child(2) > a
+end_btn = driver.find_element(By.CSS_SELECTOR, 'div > ul > li:nth-child(2) > a.status_link')
+end_btn.click()
+time.sleep(1)
+
+
+# In[97]:
+
+
+#__layout > div > div.container.my.lg > div.content_area > div > div.purchase_list.finished.ask > div:nth-child(2) > div.history_product > div.product_detail > p.name
+#__layout > div > div.container.my.lg > div.content_area > div > div.purchase_list.finished.ask > div:nth-child(3) > div.history_product > div.product_detail > p.name
+#__layout > div > div.container.my.lg > div.content_area > div > div.purchase_list.finished.ask > div:nth-child(4) > div.history_product > div.product_detail > p.name
+
+
+# In[98]:
+
+
+# 첫번째 상품 클릭해서 들어가기
+pro_btn = driver.find_element(By.CSS_SELECTOR, 'div:nth-child(2) > div.history_product > div.product_detail > p.name')
+pro_btn.click()
+time.sleep(1)
+
+
+# In[99]:
+
+
+# 상품이름추출
+list_product_num = []#상품이름
+pro_num = driver.find_elements(By.CSS_SELECTOR, 'div.order_product > div.product_detail > p.name')
+for pro_titles in (pro_num):
+    list_product_num.append(pro_titles.text)
+    print(list_product_num)     
+    time.sleep(1)
+
+
+# In[100]:
+
+
+# 사이즈 추출
+#__layout > div > div.container.my.mo > div > div > div.order_info_wrap > div.order_info > div.order_product > div.product_detail > p.size > span
+list_product_num2 = []#가격
+pro_size = driver.find_elements(By.CSS_SELECTOR, 'div.order_product > div.product_detail > p.size > span')
+for pro_titles2 in (pro_size):
+    list_product_num2.append(pro_titles2.text)
+    print(list_product_num2)     
+    time.sleep(1)
+
+
+# In[101]:
+
+
+# 정산가격
+#__layout > div > div.container.my.mo > div > div > div.purchase_history_wrap > div > div.history_detail > div.main_box > dl > dd > span.amount
+list_product_num3 = []#상품넘버
+pro_amount = driver.find_elements(By.CSS_SELECTOR, 'div > div.history_detail > div.main_box > dl > dd > span.amount')
+for pro_titles3 in (pro_amount):
+    list_product_num3.append(pro_titles3.text)
+    print(list_product_num3)     
+    time.sleep(1)
+
+
+# In[102]:
+
+
+# 밖으로 나가기
+#__layout > div > div:nth-child(1) > span > div > div > a.btn_cancel > svg > use
+back_btn = driver.find_element(By.CSS_SELECTOR, 'div > div > a.btn_cancel > svg > use')
+back_btn.click()
+time.sleep(1)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[105]:
+
+
+
+# for 문으로 2부터 11까지 추출하기
+# 클릭할 상품이 없으면 break
+# 첫번째 상품 클릭해서 들어가기
+for i in range(2,12):
+    pro = 'div:nth-child('+str(i)+') > div.history_product > div.product_detail > p.name'
+    print(pro)
+    pro_btn = driver.find_element(By.CSS_SELECTOR, pro)
+    pro_btn.click()
+    time.sleep(1)
+    
+    # 상품이름추출
+    list_product_num = []#상품이름
+    pro_num = driver.find_elements(By.CSS_SELECTOR, 'div.order_product > div.product_detail > p.name')
+    for pro_titles in (pro_num):
+        list_product_num.append(pro_titles.text)
+        print(list_product_num)     
+        time.sleep(1)
+        
+    # 사이즈 추출
+    #__layout > div > div.container.my.mo > div > div > div.order_info_wrap > div.order_info > div.order_product > div.product_detail > p.size > span
+    list_product_num2 = []#가격
+    pro_size = driver.find_elements(By.CSS_SELECTOR, 'div.order_product > div.product_detail > p.size > span')
+    for pro_titles2 in (pro_size):
+        list_product_num2.append(pro_titles2.text)
+        print(list_product_num2)     
+        time.sleep(1)
+
+    # 정산가격
+    #__layout > div > div.container.my.mo > div > div > div.purchase_history_wrap > div > div.history_detail > div.main_box > dl > dd > span.amount
+    list_product_num3 = []#상품넘버
+    pro_amount = driver.find_elements(By.CSS_SELECTOR, 'div > div.history_detail > div.main_box > dl > dd > span.amount')
+    for pro_titles3 in (pro_amount):
+        list_product_num3.append(pro_titles3.text)
+        print(list_product_num3)     
+        time.sleep(1)
+        
+    # 밖으로 나가기
+    #__layout > div > div:nth-child(1) > span > div > div > a.btn_cancel > svg > use
+    back_btn = driver.find_element(By.CSS_SELECTOR, 'div > div > a.btn_cancel > svg > use')
+    back_btn.click()
+    time.sleep(1)
+    
+print(list_product_num)
+print(list_product_num2)
+print(list_product_num3)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+# 첫번째 상품부터 10번째까지 들어가서 추출한 다음
+# =div:nth-child(2) > div.history_product > div.product_detail > p.name'
+# 을 문자를 나눈다음 (2)만 +1씩 증가하는 for문을 돌려서 간단하게 작성하기.
+# 다음 페이지 이동 하고 다시 추출을 이중for문으로 작성해서 반복
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+# 함수화 작업
+def product_info():
+    import warnings
+    warnings.filterwarnings(action='ignore')
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait 
+    from selenium.webdriver.support import expected_conditions as EC
+    #step1.selenium 패키지와 time 모듈 import
+    from selenium import webdriver
+    from selenium.webdriver.common.keys import Keys
+    import time
+
+    # df엑셀로 저장하기 위해서
+    import pandas as pd
+    import numpy as np
+    import pyperclip#로그인 캡처 우회. 아이디,비번 복붙용
+    import re#숫자만 추출하기 위한 함수
+    import getpass#패스워드 입력 숨기기
+#    동적크롤링을 위한 크롬 드라이버 실행
+    driver=webdriver.Chrome('C:/Users/bvcxz/anaconda3/Ojin/chromedriver')
+    #동적크롤링 하고싶은 사이트(네이버 사이트) 
+    driver.get('https://kream.co.kr/')
+    #실행할 시간을 기다려주기 위해 sleep()을 넣기
+    time.sleep(1)
+    
+    #__layout > div > div.header.lg > div.header_top > div > ul > li:nth-child(4) > a
+    # 로그인하러가기 버튼 클릭
+    # copy -> copy selector클릭!
+    #account > a
+    login_btn = driver.find_element(By.CSS_SELECTOR, 'div > ul > li:nth-child(4) > a')
+    login_btn.send_keys(Keys.RETURN) 
+    time.sleep(1)
+
+    # 아이디 비번
+    uid = str(input('아이디를 입력하세요: '))
+    upw = str(getpass.getpass('비밀번호를 입력하세요: '))
+    # id 입력
+    #id
+    id_input='#id'
+    id_box = driver.find_element(By.CSS_SELECTOR, id_input)
+
+    #pw입력
+    pw_input = '#pw'
+    pw_box = driver.find_element(By.CSS_SELECTOR, pw_input)
+    #pw입력
+
+    # 네이버 캡처 우회!====================================
+    # id 입력폼클릭 => uid내용 복붙
+    id_box.click()
+    pyperclip.copy(uid)
+    id_box.send_keys(Keys.CONTROL, 'v')
+    time.sleep(1)
+
+    # pw 입력폼클릭 => upw내용 복붙
+    pw_box.click()
+    pyperclip.copy(upw)
+    pw_box.send_keys(Keys.CONTROL, 'v')
+    time.sleep(1)
+    # 네이버 캡처 우회!====================================
+
+    # 로그인 버튼 클릭
+    #log\.login
+    submit_input = '#log\.login'
+    submit_btn = driver.find_element(By.CSS_SELECTOR,submit_input)
+    submit_btn.click()
+    time.sleep(1)
+
+    # 로그인 실패시
+    try:
+        login_err = driver.find_element(By.CSS_SELECTOR, '#err_common > div > p')
+        print('로그인 실패!!>> ', login_err.text)
+    except:
+        print('로그인성공!!')
+
+    # 메일함 클릭!
+    email_btn = driver.find_element(By.CSS_SELECTOR, 'li:nth-child(1) > a')
+    email_btn.click()
+    time.sleep(1)
+
+    # 내 메일함 => 첫번째 폴더로 들어가기
+    #\31 04_fol > span.item_wrap._d5\(mcDragndrop\|html5DragLeave\)._d6\(mcDragndrop\|html5DragOver\)._d7\(mcDragndrop\|html5Drop\) > a.directory_name._d5\(mcDragndrop\|html5DragLeave\)._d6\(mcDragndrop\|html5DragOver\)._d7\(mcDragndrop\|html5Drop\)._stopDefault
+    memail_btn = driver.find_element(By.CSS_SELECTOR, 'a.directory_name._d5\(mcDragndrop\|html5DragLeave\)._d6\(mcDragndrop\|html5DragOver\)._d7\(mcDragndrop\|html5Drop\)._stopDefault')
+    memail_btn.click()
+    time.sleep(1)
+
+    # 메일 읽어서 엑셀로 저장하고 읽은 메일은 삭제!====================
+    # n번 반복작업
+
+    n = int(input('엑셀로 저장할 이메일 개수를 입력하세요: '))
+    list_product_num = []#오더넘버
+    list_product_num2 = []#상품넘버
+    list_product_num3 = []#상품수량
+    list_product_num4 = []#상품사이즈
+
+    for _ in range(n):
+    #   읽을 메일이 없다면 break
+        # 메일 읽기
+        #strong.mail_title
+        read_mail = 'strong.mail_title'
+        rmail_btn = driver.find_element(By.CSS_SELECTOR,read_mail)
+        rmail_btn.click()
+        time.sleep(1)
+
+    #   내용 추출해서 리스트에 append
+    #   오더번호 추출 = list_product_num
+        pro_num = driver.find_elements(By.CSS_SELECTOR,'th > h2')
+        for pro_titles in (pro_num):
+            title_num3 = re.sub(r'[^0-9]', '', pro_titles.text)
+            list_product_num.append(title_num3)
+            print(list_product_num)     
+            time.sleep(1)
+
+    #   상품번호 추출
+    #   상품번호 추출 = list_product_num2
+        pro_num2 = driver.find_elements(By.CSS_SELECTOR,'tr:nth-child(2) > th > p > a')
+        for pro_titles2 in (pro_num2):
+            list_product_num2.append(pro_titles2.text)
+            print(list_product_num2)     
+            time.sleep(1)
+
+            
+    #   수량 추출
+    #   수량 추출 = list_product_num3
+        pro_num3 = driver.find_elements(By.CSS_SELECTOR, 'th:nth-child(2) > p')
+        for pro_titles3 in (pro_num3):
+            cuty_num3 = re.sub(r'[^0-9]', '', pro_titles3.text)
+            list_product_num3.append(cuty_num3)
+            print(list_product_num3)  
+            time.sleep(1)
+            
+    #   사이즈 추출
+        pro_num4 = driver.find_elements(By.CSS_SELECTOR, 'th:nth-child(2) > table > tbody > tr > th:nth-child(1) > p > span')
+        for pro_titles4 in (pro_num4):
+            pro_split=(pro_titles4.text).split()
+            list_product_num4.append(pro_split[-1])#리스트에서 마지막 원소=사이즈만 추출
+            print(list_product_num4)
+            time.sleep(1)
+
+        # 메일 삭제하기(=다시 전체 메일함으로 이동)
+        #readBtnMenu > div.buttonSet > span:nth-child(2) > button.b.primary.lft.do_delete._c1\(mlCore\|deleteMail\)
+        delete_mail = 'span:nth-child(2) > button.b.primary.lft.do_delete._c1\(mlCore\|deleteMail\)'
+        dmail_btn = driver.find_element(By.CSS_SELECTOR,delete_mail)
+        dmail_btn.click()
+        time.sleep(1)
+
+
+    # 리스트를 df로 변환    
+    df_all = pd.DataFrame({'PRODUCT_NUMBER':list_product_num2,
+                          'ORDER NO':list_product_num,
+                          'SIZE NO':list_product_num4,
+                          'CUTY NO':list_product_num3})
+    print(df_all)
+# 상품명,오더명,사이즈,수량 순으로 csv저장
+# 파일저장위치는 product_info.csv에 주소를 써서 정할 수 있음.(파일명만 쓸 시 실행되고 있는 폴더에 생성 됨.)
+    product_data = df_all.to_csv("product_info.csv", mode='w', encoding='utf-8', index = False)
+
+    
+# 모듈 실행
+product_info()
+
